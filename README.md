@@ -1,5 +1,6 @@
 # EChartsFormatter
 A ECharts Data Formatter
+```
     //获取展示形式如:
     var newJson2 = null;
     var newArr = [];
@@ -147,6 +148,6 @@ A ECharts Data Formatter
         }
         // renderLayer04Right(newJson2);
     });
-
+```
 
 ![](https://i.imgur.com/qsPR6dd.png)
