@@ -2,6 +2,7 @@
 
 2019-1-28 现只支持曲线,柱状图的更改. 数据形式为格式化后的json,即写死的数据通过格式化可以动态更改.
           还需要写几个方法根据用户的点击或是用户的会员等级展示不同数量,时限的数据.除了后端去做一些设置,大部分还是想通过js来设定.
+可以关注这篇[微信文章](https://mp.weixin.qq.com/s?__biz=MzI0NDg2MTc2Ng==&mid=2247483786&idx=1&sn=f9f94f3f6d0d5ccd02f23af23e651de8&chksm=e9561fa3de2196b5d2a5413233f62c265f311ae67e0bcc4b6d137e44f5be2ad8ff2744cfa4dd&mpshare=1&scene=1&srcid=0128OkDu1uqwSlxIeIKYoDk0#rd)留言或微信343840681留下您的github账号来共同维护这个插件
 
 A ECharts Data Formatter
 ```
