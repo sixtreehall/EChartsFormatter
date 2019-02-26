@@ -1,4 +1,5 @@
 #2019-2-26 新增几个方法
+![](https://i.imgur.com/P1A7Q21.gif)
 
 ```JavaScript
 /************************EChartsFormatter************************
