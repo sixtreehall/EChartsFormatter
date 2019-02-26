@@ -1,4 +1,4 @@
-#2019-2-26 新增几个方法
+#2019-2-26 新增几个方法 示例html页面等改善后再push上来
 ![](https://i.imgur.com/P1A7Q21.gif)
 
 ```JavaScript
