@@ -9,20 +9,41 @@ this repository:https://github.com/sixtreehall/EChartsFormatter
 
 /**
  * 根据传入name和json数据获取指定name的value值数组
+ * "create_time"为时间节点,即该条数据时间key字段名(可扩展)
  *
  * @param name 要获取的其中某一个json的key的value数组
  * @param json 控制层返回的json数据如thisData:[{"id":33,"province":"山东","company":"A公司0","s_company":"公司0","softening_point":0.1,"toluene":1,"quinoline":1,"beta_resin":1,"coking_value":1,"ash":1,"today_price":123,"remarks":"备注0","reporter":"张","create_time":"2019-02-20 13:47:52","update_time":"2019-02-20 13:47:52","b_time":null,"e_time":null,"order":null},
  * @returns {Array} 假设传入("company",thisDate),则会获取数组[A公司0,B公司1,C公司2,D公司3] 注意这里的company的数组还不能用于ECharts的维度,因为要设置
  */
 function getParamValues(name, json) {
+    console.log("name:"+name);
     var ret = [];
     var len = Object.keys(json).length;
     for (var i = 0; i < len; i++) {
-        ret.push(json[i][name]);
+        if (name == "create_time") {
+            var aDate = formatDateUntilDay(json[i][name]);
+            ret.push(aDate);
+        }else{
+            ret.push(json[i][name]);
+        }
+        // console.log("json[i][name]:"+json[i][name]);
     }
     return ret;
 }
 
+/**
+ * 将时间格式转换到直到天 省去时分秒
+ * @param date
+ */
+function formatDateUntilDay(date) {
+    var date = new Date(date);
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    var formatDate = year + "-" + month + "-" + day;
+    return formatDate;
+    // console.log(format);
+}
 /**
  * 获取时间节点从json数据中,与getParamValues不同的是这里的时间中有'2019-1-20'单引号加持.
  * 暂时未用该方法
