@@ -1,27 +1,27 @@
 /************************EChartsFormatter************************
 
-author:ukzq blog:https://www.cnblogs.com/ukzq/   
-            github:https://github.com/deadzq
+ author:ukzq blog:https://www.cnblogs.com/ukzq/
+ github:https://github.com/deadzq
 
-this repository:https://github.com/sixtreehall/EChartsFormatter
+ this repository:https://github.com/sixtreehall/EChartsFormatter
 
-****************************************************************/
+*****************************************************************/
 
 /**
  * 根据传入name和json数据获取指定name的value值数组
  * "create_time"为时间节点,即该条数据时间key字段名(可扩展)
- *
  * @param name 要获取的其中某一个json的key的value数组
  * @param json 控制层返回的json数据如thisData:[{"id":33,"province":"山东","company":"A公司0","s_company":"公司0","softening_point":0.1,"toluene":1,"quinoline":1,"beta_resin":1,"coking_value":1,"ash":1,"today_price":123,"remarks":"备注0","reporter":"张","create_time":"2019-02-20 13:47:52","update_time":"2019-02-20 13:47:52","b_time":null,"e_time":null,"order":null},
+ * @param reg 格式化参数( "year" | "month" | "day" | "time" )
  * @returns {Array} 假设传入("company",thisDate),则会获取数组[A公司0,B公司1,C公司2,D公司3] 注意这里的company的数组还不能用于ECharts的维度,因为要设置
  */
-function getParamValues(name, json) {
+function getParamValues(name,json,reg) {
     console.log("name:"+name);
     var ret = [];
     var len = Object.keys(json).length;
     for (var i = 0; i < len; i++) {
-        if (name == "create_time") {
-            var aDate = formatDateUntilDay(json[i][name]);
+        if (name == "create_time") {  //TODO 假设reg为year,那么该年份下的数据会有多条,业务逻辑是否有错
+            var aDate = formatDateUntilDay(json[i][name],reg);
             ret.push(aDate);
         }else{
             ret.push(json[i][name]);
@@ -32,18 +32,39 @@ function getParamValues(name, json) {
 }
 
 /**
- * 将时间格式转换到直到天 省去时分秒
- * @param date
+ * 将时间格式进行转换直到reg规定格式
+ * 如时间整体格式到 2019-7-27 13:13:22 (date)
+ * 那么传入reg为"year" 则返回 2019
+ * ..........."month" 则返回 2019-7
+ * ..........."day"   则返回 2019-7-27
+ * ..........."time" 则返回 2019-7-27 13:13:22
+ * @param date 时间 如 2019-7-27 13:13:22
+ * @param reg 格式化参数( "year" | "month" | "day" | "time" )
+ * @returns {string}
  */
-function formatDateUntilDay(date) {
+function formatDateUntilDay(date,reg) {
     var date = new Date(date);
     var year = date.getFullYear();
     var month = date.getMonth() + 1;
     var day = date.getDate();
-    var formatDate = year + "-" + month + "-" + day;
+    var time = date.getTime();
+
+    var formatDate = "";
+    if(reg == "year"){
+        formatDate = year;
+    }else if(reg == "month"){
+        formatDate = year + "-" + month;
+    }else if(reg == "day"){
+        formatDate = year + "-" + month + "-" + day;
+    }else if(reg == "time"){
+        formatDate = year + "-" + month + "-" + day + time;
+    }else { //默认时间到天
+        formatDate = year + "-" + month + "-" + day;
+    }
     return formatDate;
     // console.log(format);
 }
+
 /**
  * 获取时间节点从json数据中,与getParamValues不同的是这里的时间中有'2019-1-20'单引号加持.
  * 暂时未用该方法
@@ -52,7 +73,7 @@ function formatDateUntilDay(date) {
  * @param json json数据
  * @returns {Array}
  */
-function getCreateTimes(name, json) {
+function getCreateTimes(name,json) {
     var ret = [];
     var len = Object.keys(json).length;
     for (var i = 0; i < len; i++) {
@@ -60,7 +81,6 @@ function getCreateTimes(name, json) {
     }
     return ret;
 }
-
 
 /**
  * 获取json数据中的某一个字段key根据给定value => 数组
@@ -74,7 +94,7 @@ function getCreateTimes(name, json) {
  * @param value  上面的key的value等于给定此value时,才被纳入最终获取数组:
  * @returns {Array}  最终获取的数组 { array | json[key]=value & json[name] }
  */
-function getParamValuesByCname(name, json, key, value) {
+function getParamValuesByCname(name,json,key,value) {
     var ret = [];
     var len = Object.keys(json).length;
 
@@ -85,7 +105,6 @@ function getParamValuesByCname(name, json, key, value) {
     }
     return ret;
 }
-
 
 /**
  * 数组去重 假设 this=[ 1,1,1,2 ] => [ 1,2 ]
@@ -137,7 +156,7 @@ Array.prototype.delDuplicate = function () {
  * @param values 对应key的数组集合,如key为"company",该values即[A公司0,B公司1,C公司2,D公司3],如果key为"province",可以传入如[山东,北京,内蒙古,河北,新疆]
  * @returns {string} 最终获取拼接的字符串 : 对应示例:  newJson:'A公司0':[123,211,421,681],'B公司1':[300,421,255,472],'C公司2':[222,231,672,458],'D公司3':[332,425,521,862]
  */
-function getJsonResult(name, json, key, values) {
+function getJsonResult(name,json,key,values) {
     var DataJSONStr = '';
     var ret = [];
     var len = Object.keys(json).length;
@@ -179,7 +198,7 @@ function getJsonResult(name, json, key, values) {
  * @param times  新增参数times为指定的times的字符串名称
  * @returns {stgetJsonResultProring}  查看上示例
  */
-function getJsonResultPro(name, json, key, values, times) {
+function getJsonResultPro(name,json,key,values,times) {
     var DataJSONStr = '';
     var ret = [];
     var len = Object.keys(json).length;
@@ -202,31 +221,98 @@ function getJsonResultPro(name, json, key, values, times) {
     return jsonStr;
 }
 
-
-/*size:需要设定几个. typeIn:line,row? . seriesLayout:根据什么排列数据*/
 /**
  * 主要用于填充series字段
  * 示例 形式为:
  * [
- *   {"type":"line","seriesLayoutBy":"row"},
- *   {"type":"line","seriesLayoutBy":"row"},
- *   {"type":"line","seriesLayoutBy":"row"},
- *   {"type":"line","seriesLayoutBy":"row"}
+ *   {"type":"line",smooth:false,"seriesLayoutBy":"row"},
+ *   {"type":"line",smooth:false,"seriesLayoutBy":"row"},
+ *   {"type":"line",smooth:false,"seriesLayoutBy":"row"},
+ *   {"type":"line",smooth:false,"seriesLayoutBy":"row"},
+ *   {
+        type: 'pie',
+        id: 'pie',
+        radius: '30%',
+        center: ['50%', '25%'],
+        label: {
+            formatter: '{b}: {@2012} ({d}%)'
+        },
+        encode: {
+            itemName: 'create_time',
+            value: '2012',
+            tooltip: '2012'
+        }
+      }
  * ]
  *
- * @param size 需要设定几行
+ * 其中使用pie图是针对占用比的数据来展示的,如占股比例
+ * 使用pie图展示需要在option外层加入动态更新饼图数据的监听代码:  (注意里面的id要和代码中的pie的id对应), 如果不使用pie图则不需要
+ * ---> (myChart为获取的ECharts对象,以下皆为示例代码)
+ myChart.on('updateAxisPointer', function (event) {
+        var xAxisInfo = event.axesInfo[0];
+        if (xAxisInfo) {
+            var dimension = xAxisInfo.value + 1;
+            myChart.setOption({
+                series: {
+                    id: 'pie',
+                    label: {
+                        formatter: '{b}: {@[' + dimension + ']} ({d}%)'
+                    },
+                    encode: {
+                        value: dimension,
+                        tooltip: dimension
+                    }
+                }
+            });
+        }
+    });
+ <---
+ * 更多参考链接 : https://www.echartsjs.com/examples/editor.html?c=dataset-link&theme=light
+ *
+ * @param size  需要设定几行
  * @param typeIn  展示类型,主要有line(曲线),bar(柱状图), pie(饼图),scatter(散点图)  ^_^||  >饼图,散点图 暂时还支持得不太好~
- * @param seriesLayout  数据的转变形式,一般这里使用"row",还有"column"
- * @returns {Array} 查看上面示例
+ * @param seriesLayout  根据什么排列数据,数据的转变形式,一般这里使用"row",还有"column"
+ * @param smoothBol  曲线是否为光滑曲线
+ * @param times  时间的名称,与getArrayResultPro的timeName类同
+ * @param defaultPieTime  默认饼图使用的数据的时间
+ * @param pieBol  是否启用pie饼图
+ * @param pieRadius  饼图半径(默认'30%')
+ * @returns {Array}  查看上面示例
  */
-function getSeriesContent(size, typeIn, seriesLayout) {
+function getSeriesContent(size,typeIn,seriesLayout,smoothBol,times,defaultPieTime,pieBol,pieRadius) {
+    if(smoothBol == undefined){
+        smoothBol = false;
+    }
+    if(pieBol == undefined){
+        pieBol = false;
+    }
     var contentArr = [];
     for (var i = 0; i < size; i++) {
-        contentArr.push({type: typeIn, seriesLayoutBy: seriesLayout});
+        contentArr.push({type: typeIn, smooth:smoothBol, seriesLayoutBy: seriesLayout});
+    }
+    if(pieBol){
+        if(pieRadius == undefined){
+            pieRadius = '30%';
+        }
+        contentArr.push(
+            {
+                type: 'pie',
+                id: 'pie',
+                radius: pieRadius,
+                center: ['50%', '25%'],
+                label: {
+                    formatter: '{b}: {@'+defaultPieTime+'} ({d}%)'
+                },
+                encode: {
+                    itemName: times,
+                    value: defaultPieTime,
+                    tooltip: defaultPieTime
+                }
+            }
+        )
     }
     return contentArr;
 }
-
 
 /**
  * 填充ECharts dataset:source的数据形式
@@ -301,7 +387,7 @@ function twoArrayToOne(companys, timeName) {
     var timeAndcompanyArray = [];
     timeAndcompanyArray.push(timeName);
 
-    for(var i=0;i<companys.length;i++){
+    for (var i = 0; i < companys.length; i++) {
         timeAndcompanyArray.push(companys[i]);
     }
 
@@ -310,11 +396,3 @@ function twoArrayToOne(companys, timeName) {
     // }
     return timeAndcompanyArray;
 }
-
-
-
-
-
-
-
-
