@@ -2,10 +2,17 @@
 更多详尽信息请关注博客,或者star本仓库<br>
 有的朋友说写得有点麻烦,不过什么事情如果一蹴而就那就太好了!<br>
 方法基本没有冗余,麻烦一是写得不是很简化,这样也利于js功底不太好的朋友们一起学习.<br>
+现在支持曲线图line,及柱状图bar的自由切换,之后会再加入其它类型及WebGL的所需数据转化方法.<br>
 <br>
 #2019-9-7 改善不同业务情况的逻辑问题.详见EChartsFormatter2和echarts-formatter-2.html示例
-感谢两位同事的倾情改善[myzy](https://www.cnblogs.com/yzyBalance/),[huchong](https://www.cnblogs.com/huchong-bk/)
-现在支持曲线图line,及柱状图bar的自由切换,之后会再加入其它类型及WebGL的所需数据转化方法.
+感谢两位同事的倾情改善:[myzy](https://www.cnblogs.com/yzyBalance/),[huchong](https://www.cnblogs.com/huchong-bk/)<br>
+这个EChartsFormatter2.js是基于原始版本getParam.js进行的升级,为了解决较复杂业务:<br>
+1. 数据中存在断续传入的情况,即ABC三家公司的数据,B公司的数据在某些天的数据是没有传入的,而A是有的.<br>
+*  解决方式: 断续传入的情况基于该B公司最后录入的有效性数据进行延续,比如价格走势,延续最后有效的价格延续横线替代断续情况.<br>
+2. 数据中存在中途传入的情况,即ABC三家公司的数据,C公司的数据在AB公司连续输入后,在中间的某段时间进行了传入.<br>
+*  解决方式: 中途传入的情况基于该C公司在当中途数据传入的时间进行单独端点开始展示,其余情况与问题1一致.<br>
+前端示例:echarts-formatter-2.html 业务接口暂时无法提供<br>
+
 ![](https://i.imgur.com/P1A7Q21.gif)
 
 ```JavaScript
