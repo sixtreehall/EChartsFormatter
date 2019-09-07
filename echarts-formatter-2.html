@@ -1,0 +1,291 @@
+<!-- 图表接口，缺陷已经修复 -->
+<!DOCTYPE html>
+<html lang="zh">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<script src="https://cdn.bootcss.com/echarts/4.2.1-rc1/echarts-en.common.min.js" type="text/javascript" charset="utf-8"></script>
+		<!-- <script src="js/echart.js" type="text/javascript" charset="utf-8"></script> -->
+		<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<!-- getParam即EChartsFormatter2 -->
+		<script src="js/getParam.js" type="text/javascript" charset="utf-8"></script> 
+		<!-- 以下为图表颜色主题 -->
+		<script src="js/dark.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/macarons.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/wonderland.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/purple-passion.js" type="text/javascript" charset="utf-8"></script>
+		<title>ECharts Formatter</title>
+	</head>
+	<body>
+		<!-- 颜色主题选择 -->
+		<select id="sel">
+			<option value="dark">dark</option>
+			<option value="purple-passion">purple-passion</option>
+			<option value="macarons">macarons</option>
+			<option value="wonderland">wonderland</option>
+		</select>
+		<!-- 图表展示元素 -->
+		<div id="main" style="width: 100%; height: 600px;"></div>
+
+		<script type="text/javascript">
+			function getAllGoodsByType() {
+				var myChart = echarts.init(document.getElementById("main"), 'dark');
+				var companys = [];
+				var todayPrice = [];
+				var jValue = [];
+				//主题调用这个option声明应该放在外面
+				var option = null;
+				$.ajax({
+					url: "获取数据",
+					dataType: "json",
+					success: function(data) {
+						// companys = getParamValues("company", data.nameAndDateTime);
+						// console.log(companys)
+						// 遍历data数据中的nameAndDateTime取出来key值
+						for (var key in data.nameAndDateTime) {
+							// console.log(key)//所有的公司名字,已经去重
+							companys.push(key);
+						}
+						// console.log(companys)//所有的公司名字数组
+
+						//图例展示为公司名字
+						var legendData = companys.map(String);
+
+						//声明前三个公司之外的公司数组
+						var selectcompany = [];
+						//取出來三個之後的公司名字
+						for (var i = 0; i < companys.length; i++) {
+							if (i > 2) {
+								selectcompany.push(companys[i]);
+							}
+						}
+						// console.log(selectcompany)
+
+						// //循環並連接字符串
+						// var selectcompany1="";
+						// for( var i=0;i<selectcompany.length;i++){
+						// 	selectcompany1+="{'"+selectcompany[i]+"'"+":"+false+",";
+						// 	if(i=selectcompany.length-1){
+						// 		selectcompany1+="'"+selectcompany[i]+"'"+":"+false+",}";
+						// 	}
+						//
+						// }
+						// //轉為json對象
+						// selectcompany1=eval('(' + selectcompany1 + ')')
+						// console.log( selectcompany1)
+						//
+
+						//讓他們的值都為false用來填充legend中的數據
+						var selectcompany1 = {};
+						for (let i = 0; i < selectcompany.length; i++) {
+							selectcompany1[selectcompany[i]] = false;
+						}
+						console.log(selectcompany1)
+
+						//不能像之前的一样写,现在接口里面数据没有today_price这个字段了
+						// today_price = getParamValues("today_price", data.nameAndTodayPrice);
+						//得到全部时间,放到jValue数组里面
+						for (var item in data.nameAndDateTime) {
+							//item 表示Json串中的属性，如'name'
+							jValue.push(data.nameAndDateTime[item]); //key所对应的value
+						}
+						//console.log(jValue);//所有的时间,数组
+
+						//取出所有的公司数组下标里面的时间精确到天
+						var jValue2 = new Array();
+						for (var i = 0; i < jValue.length; i++) {
+							jValue2[i] = new Array();
+							for (var j = 0; j < jValue[i].length; j++) {
+								jValue2[i].push(formatDateUntilDay(jValue[i][j]));
+							}
+						}
+						//打印的是所有公司数组下标去掉时分秒的格式
+						// console.log(jValue2)
+						//打印的是接口数据的公司名字加上时间的数组
+						// console.log(data.nameAndDateTime)
+
+						//现在需要把时间的时分秒去掉(结果为字符串形式)
+						//如果是下标里面有很多时间的话是不可以直接用formatDateUntilDay方法的
+						var jValue1 = [];
+						for (var i = 0; i < jValue.length; i++) {
+							for (var j = 0; j < jValue[i].length; j++) {
+								jValue1.push(formatDateUntilDay(jValue[i][j]));
+							}
+						}
+						// 想排序发现这样写不能实现
+						// jValue1=delDuplicateArrayItem(jValue1.sort());
+						//对时间进行去重
+						jValue1 = delDuplicateArrayItem(jValue1).reverse();
+						//去掉时分秒并且去重的时间数组(字符串类型)
+						// console.log(jValue1)
+						// console.log(typeof jValue1[0])//String
+
+						//循环对时间变成时间戳
+						for (var i = 0; i < jValue1.length; i++) {
+							jValue1[i] = (new Date(jValue1[i])).getTime();
+						}
+						//对其时间戳进行排序
+						jValue1 = jValue1.sort();
+						//时间戳(秒数)转换为日期,通过插件里面的方法
+						for (var i = 0; i < jValue1.length; i++) {
+							jValue1[i] = format(jValue1[i], 'yyyy-mm-dd');
+						}
+						//输出需要放在X轴的数组,日期
+						// console.log(jValue1);
+
+						//循环时间字符串对其月份和天格式化(加0)
+						for (var i = 0; i < jValue2.length; i++) {
+							for (var j = 0; j < jValue2[i].length; j++) {
+								jValue2[i][j] = changeSting(jValue2[i][j]);
+							}
+						}
+						//得到全部的公司数据(字符串类型)
+						for (var dataset in data.nameAndTodayPrice) {
+							todayPrice.push(data.nameAndTodayPrice[dataset]);
+						}
+						// console.log(todayPrice)
+
+						//每个公司里面的数据在时间轴上出现的位置
+						var index = findIndex(jValue2, jValue1);
+
+						//声明数组,需要对之前的数组进行处理(改后的全部的价格数组,逗号已经改成0了)
+						var twoPrice = ChangeCommas(todayPrice);
+
+						//声明一个最终的价格数组(前面为空字符串,后面为empty空)
+						var endDatePriceCompany = getEndPriceArray(jValue2, jValue1, index, twoPrice);
+
+						//需要在series中进行填充数据的变量
+						var series_content = splicingSeries(companys, endDatePriceCompany);
+
+						option = {
+							//标题名字
+							title: {
+								text: "第二个接口对接"
+							},
+							//图例展示,数据为legendData,滚轮形式,垂直,位置
+							legend: {
+								data: legendData,
+								type: "scroll",
+								orient: "vertical",
+								right: 20,
+								top: 40,
+								bottom: 20,
+								//填入數據
+								selected: selectcompany1
+							},
+							//坐标轴触发
+							tooltip: {
+								trigger: 'axis'
+							},
+							//工具箱，每个图表最多仅有一个工具箱
+							toolbox: {
+								//显示策略，可选为：true（显示） | false（隐藏），默认值为false
+								show: true,
+								//启用功能，目前支持feature，工具箱自定义功能回调处理
+								feature: {
+									//辅助线标志
+									mark: {
+										show: true
+									},
+									//dataZoom，框选区域缩放，自动与存在的dataZoom控件同步，分别是启用，缩放后退
+									dataZoom: {
+										show: true,
+										title: {
+											//鼠标移入显示的标题
+											dataZoom: "区域缩放",
+											dataZoomReset: "区域缩放后退"
+										}
+									},
+									//数据视图，打开数据视图，可设置更多属性,readOnly 默认数据视图为只读(即值为true)，可指定readOnly为false打开编辑功能
+									dataView: {
+										show: true,
+										readOnly: true
+									},
+									//magicType，动态类型切换，支持直角系下的折线图、柱状图、堆积、平铺转换
+									magicType: {
+										show: true,
+										type: ['line', 'bar', 'stack', 'tiled']
+									},
+									//restore，还原，复位原始图表
+									restore: {
+										show: true
+									},
+									//saveAsImage，保存图片（IE8-不支持）,图片类型默认为'png'
+									saveAsImage: {
+										show: true
+									}
+								}
+							},
+							xAxis: {
+								type: 'category',
+								//两侧是否留白
+								boundaryGap: false,
+								x: "center",
+								y: "top",
+								gridIndex: 0,
+								nameGap: 5,
+								data: jValue1
+							},
+							yAxis: {
+								//当为类目轴的时候,会是一条竖直的线,这个地方应该用value类型
+								// type: 'category',
+								// data: resPrice1,
+								type: 'value',
+								gridIndex: 0
+							},
+							//下面的滑动的轴,可以查看时间区间
+							dataZoom: [{
+								type: 'slider',
+								startValue: 1,
+								endValue: 2,
+								show: true,
+								height: 20,
+								left: '20%',
+								right: '40%',
+								bottom: '2%',
+								start: 50,
+								end: 100,
+								textStyle: {
+									color: '#d4ffff',
+									fontSize: 11,
+								},
+							}, {
+								type: 'inside'
+							}],
+							grid: {
+								top: '6%', //图距离父容器div顶端的距离
+								left: '2%', //图距离父容器div左端的距离
+								right: '25%', //图距离父容器div右端的距离
+								bottom: '0%', //图距离父容器div底端的距离
+								containLabel: true //grid 区域是否包含坐标轴的刻度标签
+							},
+							series: series_content
+						}
+						myChart.setOption(option);
+						//响应式
+						//单个
+						// window.onresize = myChart.resize;
+						//多个
+						window.addEventListener("resize", function() {
+							myChart.resize();
+						});
+					},
+				});
+
+				//更改图表颜色 (首先引入模板颜色)
+				$('#sel').change(function() {
+					myChart.dispose();
+					let Theme = $(this).val();
+					// 基于准备好的dom，初始化echarts实例
+					myChart = echarts.init(document.getElementById('main'), Theme);
+					// 使用刚指定的配置项和数据显示图表。
+					myChart.setOption(option);
+				});
+
+			}
+			// 调用方法
+			getAllGoodsByType();
+		</script>
+	</body>
+</html>
