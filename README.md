@@ -3,6 +3,8 @@
 有的朋友说写得有点麻烦,不过什么事情如果一蹴而就那就太好了!<br>
 方法基本没有冗余,麻烦一是写得不是很简化,这样也利于js功底不太好的朋友们一起学习.<br>
 <br>
+#2019-9-7 改善不同业务情况的逻辑问题.详见EChartsFormatter2和echarts-formatter-2.html示例
+感谢两位同事的倾情改善[myzy](https://www.cnblogs.com/yzyBalance/),[huchong](https://www.cnblogs.com/huchong-bk/)
 现在支持曲线图line,及柱状图bar的自由切换,之后会再加入其它类型及WebGL的所需数据转化方法.
 ![](https://i.imgur.com/P1A7Q21.gif)
 
